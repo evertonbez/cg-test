@@ -1,4 +1,5 @@
 import { Worker } from "bullmq";
+import { initializeBullBoard } from "../app.ts";
 import redisConnection from "../config/redis.ts";
 import { initializeAllQueues, queues } from "../queues/index.ts";
 import { createWorkerHandlers } from "./handler.ts";
@@ -8,6 +9,8 @@ class WorkerService {
 
   async initialize() {
     await initializeAllQueues();
+
+    initializeBullBoard();
 
     const workerHandlers = createWorkerHandlers();
 
