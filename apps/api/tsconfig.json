@@ -1,0 +1,10 @@
+{
+  "extends": "@cograde/tsconfig/node.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  }
+}
