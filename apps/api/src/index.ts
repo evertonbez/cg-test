@@ -1,9 +1,9 @@
-import { createAdaptorServer } from "@hono/node-server";
 import app from "./app.ts";
+import config from "./config.ts";
+import { createHttpServer } from "./server/http.ts";
 
-const server = createAdaptorServer({
-  fetch: app.fetch,
-  hostname: "0.0.0.0",
-});
+const server = createHttpServer(app);
 
-server.listen(process.env.PORT ? Number(process.env.PORT) : 3000);
+await Promise.all([]);
+
+server.listen(config.port);
