@@ -10,6 +10,8 @@ const sigint = "SIGINT";
 function gracefulShutdown(httpServer: ServerType, opt: { timeout: number }) {
   const exitFn = async () => {
     console.log("Shutting down server...");
+
+    return Promise.resolve();
   };
 
   return (code: number, reason: string) => (err: unknown) => {
@@ -34,12 +36,14 @@ export const createHttpServer = (app: OpenAPIHono) => {
     console.log(`Running HTTP server at: http://localhost:${config.port}`);
   });
 
-  const exitHandler = gracefulShutdown(httpServer, { timeout: 500 });
+  if (!config.isDevelopment) {
+    const exitHandler = gracefulShutdown(httpServer, { timeout: 500 });
 
-  process.on(uncaughtException, exitHandler(1, "Unexpected Error Occurred"));
-  process.on(unhandledRejection, exitHandler(1, "Unhandled Promise"));
-  process.on(sigint, exitHandler(0, `Your operating system: ${sigint}`));
-  process.on(sigterm, exitHandler(0, `Your operating system: ${sigterm}`));
+    process.on(uncaughtException, exitHandler(1, "Unexpected Error Occurred"));
+    process.on(unhandledRejection, exitHandler(1, "Unhandled Promise"));
+    process.on(sigint, exitHandler(0, `Your operating system: ${sigint}`));
+    process.on(sigterm, exitHandler(0, `Your operating system: ${sigterm}`));
+  }
 
   return httpServer;
 };

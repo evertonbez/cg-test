@@ -34,19 +34,19 @@ class WorkerService {
     });
 
     worker.on("completed", () => {
-      console.log("Worker restarting");
+      console.log("Worker completed");
     });
 
     worker.on("active", () => {
-      console.log("Worker reconnecting");
+      console.log("Worker active");
     });
 
     worker.on("ready", () => {
-      console.log("Worker disconnecting");
+      console.log("Worker ready");
     });
 
     worker.on("closing", () => {
-      console.log("Worker disconnected");
+      console.log("Worker closing");
     });
   }
 

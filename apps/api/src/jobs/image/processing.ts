@@ -4,9 +4,13 @@ import { imageProcessingQueue } from "../../queues/queues.ts";
 
 export const imageProcessing = job(
   "image-processing",
-  z.object({}),
+  z.object({
+    url: z.url(),
+  }),
   {
     queue: imageProcessingQueue,
   },
-  async (data, ctx) => {}
+  async (data, ctx) => {
+    console.log("Processing image", data);
+  }
 );

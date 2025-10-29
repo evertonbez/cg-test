@@ -1,4 +1,5 @@
 import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
+import { imageProcessing } from "../../jobs/index.ts";
 import { CreateJobSchema } from "./schema.ts";
 
 const app = new OpenAPIHono()
@@ -31,6 +32,10 @@ const app = new OpenAPIHono()
       tags: ["jobs"],
     }),
     async (c) => {
+      const job = await imageProcessing.trigger({
+        url: "https://example.com/image.jpg",
+      });
+
       return c.json(
         {
           status: "started",
