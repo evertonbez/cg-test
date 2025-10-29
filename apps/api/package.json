@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "node --env-file=.env --experimental-strip-types --watch --no-warnings src/index.ts"
   },
   "keywords": [],
   "author": "",
@@ -12,5 +12,12 @@
     "@cograde/tsconfig": "workspace:*",
     "@types/node": "^24.9.2",
     "typescript": "5.9.2"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.19.5",
+    "@hono/zod-openapi": "^1.1.4",
+    "@scalar/hono-api-reference": "^0.9.22",
+    "hono": "^4.10.3",
+    "zod": "^4.1.12"
   }
 }
