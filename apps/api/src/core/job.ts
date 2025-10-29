@@ -71,12 +71,21 @@ class JobRegistry {
 const registry = JobRegistry.getInstance();
 
 class SimpleJob<T = any> {
+  public id: string;
+  public schema: z.ZodSchema<T>;
+  private handler: (payload: T, ctx: JobContext) => Promise<any>;
+  private options: JobOptions;
+
   constructor(
-    public id: string,
-    public schema: z.ZodSchema<T>,
-    private handler: (payload: T, ctx: JobContext) => Promise<any>,
-    private options: JobOptions
+    id: string,
+    schema: z.ZodSchema<T>,
+    handler: (payload: T, ctx: JobContext) => Promise<any>,
+    options: JobOptions
   ) {
+    this.id = id;
+    this.schema = schema;
+    this.handler = handler;
+    this.options = options;
     const queueName =
       typeof this.options.queue === "string"
         ? this.options.queue

@@ -1,4 +1,4 @@
-import { Queue, QueueOptions } from "bullmq";
+import { Queue, type QueueOptions } from "bullmq";
 import redisConnection from "../config/redis.ts";
 
 export const createBaseQueueOptions = (
