@@ -1,7 +1,7 @@
 import { getJobByIdQuery, getJobsQuery } from "@cograde/firebase/admin/queries";
 import { db } from "@cograde/firebase/server";
 import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
-import { imageProcessing } from "../../jobs/index.ts";
+import { imageProcessingJob } from "../../jobs/index.ts";
 import { CreateJobSchema } from "./schema.ts";
 
 const app = new OpenAPIHono()
@@ -85,7 +85,7 @@ const app = new OpenAPIHono()
           );
         }
 
-        const newJob = await imageProcessing.trigger({ id, inputUrl: url });
+        const newJob = await imageProcessingJob.trigger({ id, inputUrl: url });
 
         return c.json(
           {

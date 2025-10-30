@@ -2,14 +2,13 @@ import { setJobMutation } from "@cograde/firebase/admin/mutations";
 import { db } from "@cograde/firebase/server";
 import axios from "axios";
 import { fileTypeFromBuffer } from "file-type";
-import { writeFileSync } from "fs";
-import path from "path";
 import sharp from "sharp";
 import z from "zod";
 import { job } from "../../core/job.ts";
 import { imageProcessingQueue } from "../../queues/queues.ts";
+import { getSignedUrl, uploadObject } from "../../sdks/r2.ts";
 
-export const imageProcessing = job(
+export const imageProcessingJob = job(
   "image-processing",
   z.object({
     id: z.string(),
@@ -22,6 +21,7 @@ export const imageProcessing = job(
     const { id, inputUrl } = data;
 
     await setJobMutation(db, id, {
+      inputUrl,
       status: "started",
       steps: { download: "pending", transform: "pending", upload: "pending" },
     });
@@ -78,8 +78,35 @@ export const imageProcessing = job(
         steps: { transform: "done", upload: "pending" },
       });
 
-      const outputFilePath = path.join(process.cwd(), `output-${id}.jpg`);
-      writeFileSync(outputFilePath, transformedBuffer);
-    } catch (error) {}
+      const r2Result = await uploadObject({
+        body: transformedBuffer,
+        key: `${id}.${type.ext || "jpg"}`,
+        contentType: type.mime || "image/jpeg",
+      });
+
+      const uploadUrl = await getSignedUrl({
+        key: r2Result.key,
+        operation: "get",
+      });
+
+      await setJobMutation(db, id, {
+        outputUrl: uploadUrl,
+        status: "done",
+        steps: { upload: "done" },
+      });
+
+      return {
+        status: "done",
+        outputUrl: uploadUrl,
+        message: "Image processed successfully",
+      };
+    } catch (error) {
+      await setJobMutation(db, id, {
+        status: "error",
+        steps: { download: "error", transform: "error", upload: "error" },
+        errorMessage: error instanceof Error ? error.message : "Unknown error",
+      });
+      throw error;
+    }
   }
 );

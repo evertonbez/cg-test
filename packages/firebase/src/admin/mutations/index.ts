@@ -15,6 +15,8 @@ import { admin } from "../../client/server.ts";
 // }
 
 type SetJobMutationParams = {
+  inputUrl?: string | null;
+  outputUrl?: string | null;
   status?: "pending" | "started" | "done" | "error";
   steps?: {
     download?: "pending" | "started" | "done" | "error";
@@ -32,6 +34,8 @@ export async function setJobMutation(
   const jobRef = db.collection("jobs").doc(id);
   const payload: Record<string, any> = {};
 
+  if (data.inputUrl) payload.inputUrl = data.inputUrl;
+  if (data.outputUrl) payload.outputUrl = data.outputUrl;
   if (data.status) payload.status = data.status;
   if (data.errorMessage) payload.errorMessage = data.errorMessage;
   if (data.steps) {
@@ -46,6 +50,6 @@ export async function setJobMutation(
     await jobRef.update(payload);
   } catch {
     payload.createdAt = admin.firestore.Timestamp.now();
-    await jobRef.set(payload);
+    await jobRef.set(payload, { merge: true });
   }
 }
