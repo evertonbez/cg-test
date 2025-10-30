@@ -85,7 +85,7 @@ const app = new OpenAPIHono()
           );
         }
 
-        const newJob = await imageProcessingJob.trigger({ id, inputUrl: url });
+        await imageProcessingJob.trigger({ id, inputUrl: url });
 
         return c.json(
           {

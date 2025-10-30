@@ -20,7 +20,6 @@ class JobRegistry {
   private static instance: JobRegistry;
   private jobs: Map<string, SimpleJob> = new Map();
   private jobQueues: Map<string, string> = new Map();
-  private queues: Map<string, Queue> = new Map();
 
   static getInstance(): JobRegistry {
     if (!JobRegistry.instance) {
@@ -119,6 +118,38 @@ class SimpleJob<T = any> {
 
     console.log(`Job triggered: ${job.id} (${this.id})`);
     return job;
+  }
+
+  async batchTrigger(
+    payloads: Array<{ payload: T; options: Record<string, any> }>
+  ) {
+    const queue = registry.getQueue(this.id);
+    const baseOptions = createBaseQueueOptions().defaultJobOptions || {};
+
+    const bulkJobs = payloads.map(({ payload, options = {} }) => ({
+      name: this.id,
+      data: this.validate(payload),
+      priority: this.options.priority ?? baseOptions.priority ?? 1,
+      attempts: this.options.attempts ?? baseOptions.attempts ?? 3,
+      delay: this.options.delay ?? options.delay ?? 0,
+      removeOnComplete:
+        this.options.removeOnComplete !== undefined
+          ? { count: this.options.removeOnComplete, age: 24 * 3600 }
+          : baseOptions.removeOnComplete,
+      removeOnFail:
+        this.options.removeOnFail !== undefined
+          ? { count: this.options.removeOnFail, age: 7 * 24 * 3600 }
+          : baseOptions.removeOnFail,
+      backoff: baseOptions.backoff,
+      ...options,
+    }));
+
+    const jobs = await queue.addBulk(bulkJobs);
+    return jobs;
+  }
+
+  async triggerDelayed(payload: T, delayMs: number) {
+    this.trigger(payload, { delay: delayMs });
   }
 
   async execute(job: Job) {
