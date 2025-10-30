@@ -14,3 +14,19 @@ export const imageProcessing = job(
     console.log("Processing image", data);
   }
 );
+
+export const imageDeploy = job(
+  "image-deploy",
+  z.object({
+    imageId: z.string(),
+  }),
+  {
+    queue: imageProcessingQueue,
+  },
+  async (data, ctx) => {
+    console.log("Deploying image", data);
+    return {
+      status: "deployed",
+    };
+  }
+);

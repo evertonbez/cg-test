@@ -1,1 +1,2 @@
-export { imageProcessing } from "./processing.ts";
+export { imageDeploy, imageProcessing } from "./processing.ts";
+
