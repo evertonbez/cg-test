@@ -1,4 +1,4 @@
-import { updateJobMutation } from "@cograde/firebase/admin/mutations";
+import { setJobMutation } from "@cograde/firebase/admin/mutations";
 import { db } from "@cograde/firebase/server";
 import axios from "axios";
 import { fileTypeFromBuffer } from "file-type";
@@ -21,7 +21,7 @@ export const imageProcessing = job(
   async (data) => {
     const { id, inputUrl } = data;
 
-    await updateJobMutation(db, id, {
+    await setJobMutation(db, id, {
       status: "started",
       steps: { download: "pending", transform: "pending", upload: "pending" },
     });
@@ -35,7 +35,7 @@ export const imageProcessing = job(
 
       const type = await fileTypeFromBuffer(imageBuffer);
       if (!type || !type.mime.startsWith("image/")) {
-        await updateJobMutation(db, id, {
+        await setJobMutation(db, id, {
           status: "error",
           steps: { download: "error" },
           errorMessage: "Arquivo não é imagem",
@@ -45,7 +45,7 @@ export const imageProcessing = job(
 
       const MAX_SIZE_BYTES = 10 * 1024 * 1024;
       if (imageBuffer.length > MAX_SIZE_BYTES) {
-        await updateJobMutation(db, id, {
+        await setJobMutation(db, id, {
           status: "error",
           steps: { download: "error" },
           errorMessage: "Arquivo maior que 10 MB",
@@ -53,7 +53,7 @@ export const imageProcessing = job(
         throw new Error("Arquivo maior que 10 MB");
       }
 
-      await updateJobMutation(db, id, {
+      await setJobMutation(db, id, {
         steps: { download: "done", transform: "started" },
       });
 
@@ -64,7 +64,8 @@ export const imageProcessing = job(
 
       const watermarkSvg = Buffer.from(`
          <svg width="300" height="80">
-           <text x="0" y="60" font-size="40" fill="white" opacity="0.6">MyWatermark</text>
+           <rect width="100%" height="100%" fill="red" />
+           <text x="10" y="60" font-size="40" fill="white" opacity="0.6">evertonbez</text>
          </svg>
        `);
 
@@ -73,7 +74,7 @@ export const imageProcessing = job(
         .jpeg({ quality: 80 })
         .toBuffer();
 
-      await updateJobMutation(db, id, {
+      await setJobMutation(db, id, {
         steps: { transform: "done", upload: "pending" },
       });
 

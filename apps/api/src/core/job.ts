@@ -1,7 +1,7 @@
 import type { Job } from "bullmq";
 import { Queue } from "bullmq";
 import type { z } from "zod";
-import { createBaseQueueOptions } from "../queues/base.ts";
+import { createBaseQueueOptions, queueRegistry } from "../queues/base.ts";
 
 export interface JobContext {
   job: Job;
@@ -51,20 +51,12 @@ class JobRegistry {
       );
     }
 
-    if (!this.queues.has(queueName)) {
-      const queue = new Queue(queueName, createBaseQueueOptions());
-      this.queues.set(queueName, queue);
-    }
+    const existing = queueRegistry.getQueue(queueName);
+    if (existing) return existing;
 
-    return this.queues.get(queueName)!;
-  }
-
-  async closeQueues() {
-    for (const [name, queue] of this.queues) {
-      await queue.close();
-      console.log(`Closed queue: ${name}`);
-    }
-    this.queues.clear();
+    const queue = new Queue(queueName, createBaseQueueOptions());
+    queueRegistry.registerQueue(queueName, queue);
+    return queue;
   }
 }
 
@@ -163,10 +155,6 @@ export async function executeJob(jobId: string, job: Job) {
     throw new Error(`No job found for ${jobId}`);
   }
   return jobInstance.execute(job);
-}
-
-export async function closeQueues() {
-  return registry.closeQueues();
 }
 
 export { registry as jobRegistry };

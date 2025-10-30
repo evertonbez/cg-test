@@ -33,28 +33,27 @@ class WorkerService {
 
   private setupWorkerEventHandlers(worker: Worker, queueName: string) {
     worker.on("error", (error) => {
-      console.error("Worker error:", error);
+      console.error("Worker error:", error, { queueName });
     });
 
     worker.on("completed", () => {
-      console.log("Worker completed");
+      console.log("Worker completed", { queueName });
     });
 
     worker.on("active", () => {
-      console.log("Worker active");
+      console.log("Worker active", { queueName });
     });
 
     worker.on("ready", () => {
-      console.log("Worker ready");
+      console.log("Worker ready", { queueName });
     });
 
     worker.on("closing", () => {
-      console.log("Worker closing");
+      console.log("Worker closing", { queueName });
     });
   }
 
   private getOptimalConcurrency(queueName: string): number {
-    // Find concurrency from queue config
     const queueConfig = Object.values(queues).find(
       (config) => config.name === queueName
     );

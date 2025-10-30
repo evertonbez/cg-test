@@ -1,4 +1,3 @@
-import { Timestamp } from "firebase-admin/firestore";
 import { admin } from "../../client/server.ts";
 
 // {
@@ -10,43 +9,12 @@ import { admin } from "../../client/server.ts";
 //     "transform": "done",
 //     "upload": "done"
 //   },
-//   "transformations": ["resize", "grayscale", "watermark"],
+//   "errorMessage": null
 //   "createdAt": 1698600000,
 //   "updatedAt": 1698601234,
-//   "error": null
 // }
 
-export type CreateJobMutationParams = {
-  id: string;
-  url: string;
-};
-
-export async function createJobMutation(
-  db: FirebaseFirestore.Firestore,
-  data: CreateJobMutationParams
-) {
-  const jobCollection = db.collection("jobs");
-
-  const { id, url } = data;
-
-  const jobCreated = await jobCollection.doc(id).set(
-    {
-      inputUrl: url,
-      outputUrl: null,
-      status: "running",
-      steps: {
-        download: "running",
-        transform: "pending",
-        upload: "pending",
-      },
-      createdAt: Timestamp.now(),
-      updatedAt: Timestamp.now(),
-    },
-    { merge: true }
-  );
-}
-
-type UpdateJobMutationParams = {
+type SetJobMutationParams = {
   status?: "pending" | "started" | "done" | "error";
   steps?: {
     download?: "pending" | "started" | "done" | "error";
@@ -56,10 +24,10 @@ type UpdateJobMutationParams = {
   errorMessage?: string | null;
 };
 
-export async function updateJobMutation(
+export async function setJobMutation(
   db: FirebaseFirestore.Firestore,
   id: string,
-  data: UpdateJobMutationParams
+  data: SetJobMutationParams
 ) {
   const jobRef = db.collection("jobs").doc(id);
   const payload: Record<string, any> = {};
@@ -77,6 +45,7 @@ export async function updateJobMutation(
   try {
     await jobRef.update(payload);
   } catch {
-    await jobRef.set(payload, { merge: true });
+    payload.createdAt = admin.firestore.Timestamp.now();
+    await jobRef.set(payload);
   }
 }
