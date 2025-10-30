@@ -5,7 +5,6 @@ import { serveStatic } from "@hono/node-server/serve-static";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { Scalar } from "@scalar/hono-api-reference";
 import { basicAuth } from "hono/basic-auth";
-import { logger } from "hono/logger";
 import { requestId } from "hono/request-id";
 import { secureHeaders } from "hono/secure-headers";
 import { getAllQueues } from "./queues/index.ts";
@@ -24,7 +23,6 @@ const app = new OpenAPIHono({
 
 app.use("*", requestId());
 app.use(secureHeaders());
-app.use(logger());
 
 const basePath = "/admin";
 

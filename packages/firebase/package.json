@@ -1,0 +1,22 @@
+{
+  "name": "@cograde/firebase",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "devDependencies": {
+    "@cograde/tsconfig": "workspace:*",
+    "@types/node": "^24.9.2",
+    "typescript": "5.9.2"
+  },
+  "dependencies": {
+    "firebase": "^12.4.0",
+    "firebase-admin": "^13.5.0",
+    "server-only": "^0.0.1"
+  },
+  "exports": {
+    "./server": "./src/client/server.ts",
+    "./client": "./src/client/client.ts"
+  }
+}

@@ -47,5 +47,5 @@ export class QueueRegistry {
     console.info("All queues closed");
   }
 }
-// Export singleton instance
+
 export const queueRegistry = QueueRegistry.getInstance();
