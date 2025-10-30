@@ -17,6 +17,8 @@
   },
   "exports": {
     "./server": "./src/client/server.ts",
-    "./client": "./src/client/client.ts"
+    "./client": "./src/client/client.ts",
+    "./admin/queries": "./src/admin/queries/index.ts",
+    "./admin/mutations": "./src/admin/mutations/index.ts"
   }
 }

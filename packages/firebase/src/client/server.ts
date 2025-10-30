@@ -9,5 +9,4 @@ admin.initializeApp({
 const db = admin.firestore();
 const storage = admin.storage();
 
-export { db, storage };
-23;
+export { admin, db, storage };

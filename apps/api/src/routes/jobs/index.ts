@@ -1,6 +1,7 @@
+import { getJobByIdQuery, getJobsQuery } from "@cograde/firebase/admin/queries";
 import { db } from "@cograde/firebase/server";
 import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
-import { downloadImage, validateImage } from "../../utils.ts";
+import { imageProcessing } from "../../jobs/index.ts";
 import { CreateJobSchema } from "./schema.ts";
 
 const app = new OpenAPIHono()
@@ -19,6 +20,18 @@ const app = new OpenAPIHono()
         },
       },
       responses: {
+        200: {
+          description: "Job already exists",
+          content: {
+            "application/json": {
+              schema: z.object({
+                status: z.string(),
+                jobId: z.string(),
+                message: z.string(),
+              }),
+            },
+          },
+        },
         201: {
           description: "Job created",
           content: {
@@ -58,46 +71,35 @@ const app = new OpenAPIHono()
     }),
     async (c) => {
       try {
-        const { url } = c.req.valid("json");
+        const { id, url } = c.req.valid("json");
+        const job = await getJobByIdQuery(db, id);
 
-        const image = await downloadImage(url);
-
-        if (!image) {
-          return c.json(
-            { error: "Erro ao baixar a imagem", code: "IMAGE_DOWNLOAD_ERROR" },
-            400
-          );
-        }
-
-        const sizeValidation = await validateImage({
-          data: image.data,
-          contentType: image.contentType,
-          contentLength: image.contentLength,
-        });
-
-        if (!sizeValidation.isValid) {
+        if (job) {
           return c.json(
             {
-              error: sizeValidation.error || "Erro ao validar a imagem",
-              code: "IMAGE_VALIDATION_ERROR",
+              status: "exists",
+              jobId: job.id,
+              message: "Job already exists",
             },
-            400
+            200
           );
         }
+
+        const newJob = await imageProcessing.trigger({ id, inputUrl: url });
 
         return c.json(
           {
-            status: "started",
-            jobId: "unknown",
-            message: "Job de processamento de imagem criado com sucesso",
+            status: "created",
+            jobId: id,
+            message: "Job created successfully",
           },
           201
         );
       } catch (error) {
-        console.error("Erro ao criar job:", error);
+        console.error("Error creating job:", error);
         return c.json(
           {
-            error: "Erro interno do servidor",
+            error: "Internal server error",
             code: "INTERNAL_ERROR",
           },
           500
@@ -118,17 +120,13 @@ const app = new OpenAPIHono()
       tags: ["jobs"],
     }),
     async (c) => {
-      const jobsCollection = db.collection("jobs");
+      const jobs = await getJobsQuery(db, {
+        limit: 30,
+        orderBy: "createdAt",
+        orderDirection: "desc",
+      });
 
-      const query = jobsCollection.orderBy("createdAt", "desc").limit(10);
-      const snapshot = await query.get();
-
-      const jobs = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        data: doc.data(),
-      }));
-
-      return c.json({ jobs });
+      return c.json({ data: jobs });
     }
   )
   .openapi(
@@ -144,7 +142,11 @@ const app = new OpenAPIHono()
       tags: ["jobs"],
     }),
     async (c) => {
-      return c.json({});
+      const id = c.req.param("id");
+
+      const job = await getJobByIdQuery(db, id);
+
+      return c.json({ data: job });
     }
   );
 
