@@ -1,5 +1,3 @@
-import "server-only";
-
 import admin from "firebase-admin";
 import serviceAccount from "../credentials/serviceAccountKey.json" with { type: "json" };
 
@@ -12,3 +10,4 @@ const db = admin.firestore();
 const storage = admin.storage();
 
 export { db, storage };
+23;

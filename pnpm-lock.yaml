@@ -26,6 +26,9 @@ importers:
       '@bull-board/hono':
         specifier: ^6.14.0
         version: 6.14.0(hono@4.10.3)
+      '@cograde/firebase':
+        specifier: workspace:*
+        version: link:../../packages/firebase
       '@hono/node-server':
         specifier: ^1.19.5
         version: 1.19.5(hono@4.10.3)
