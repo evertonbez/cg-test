@@ -1,8 +1,13 @@
 import admin from "firebase-admin";
-import serviceAccount from "../credentials/serviceAccountKey.json" with { type: "json" };
+
+const raw = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT!);
+
+if (raw.private_key) {
+  raw.private_key = raw.private_key.replace(/\\n/g, "\n");
+}
 
 admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
+  credential: admin.credential.cert(raw as admin.ServiceAccount),
   databaseURL: "https://cograder-ae0cd.firebaseio.com",
 });
 

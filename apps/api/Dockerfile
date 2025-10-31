@@ -15,7 +15,6 @@ FROM base AS installer
 WORKDIR /app
 
 COPY --from=builder /app/out/json/ .
-COPY --from=builder /app/packages/firebase/src/credentials/ ./packages/firebase/src/credentials/
 RUN pnpm install --frozen-lockfile --prod
 
 COPY --from=builder /app/out/full/ .

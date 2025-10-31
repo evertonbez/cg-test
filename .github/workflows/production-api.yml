@@ -26,14 +26,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Write Firebase service account
-        run: |
-          mkdir -p packages/firebase/src/credentials
-          echo "$FIREBASE_SERVICE_ACCOUNT" > packages/firebase/src/credentials/serviceAccountKey.json
-          ls -la packages/firebase/src/credentials
-        env:
-          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
 
