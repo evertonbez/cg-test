@@ -9,19 +9,33 @@ import { admin } from "../../client/server.ts";
 //     "transform": "done",
 //     "upload": "done"
 //   },
+//   "progress": {
+//     "download": 100,
+//     "transform": 100,
+//     "upload": 100,
+//     "overall": 100
+//   },
 //   "errorMessage": null
 //   "createdAt": 1698600000,
 //   "updatedAt": 1698601234,
 // }
+
+type StepStatus = "pending" | "started" | "done" | "error";
 
 type SetJobMutationParams = {
   inputUrl?: string | null;
   outputUrl?: string | null;
   status?: "pending" | "started" | "done" | "error";
   steps?: {
-    download?: "pending" | "started" | "done" | "error";
-    transform?: "pending" | "started" | "done" | "error";
-    upload?: "pending" | "started" | "done" | "error";
+    download?: StepStatus;
+    transform?: StepStatus;
+    upload?: StepStatus;
+  };
+  progress?: {
+    download?: number;
+    transform?: number;
+    upload?: number;
+    overall?: number;
   };
   errorMessage?: string | null;
 };
@@ -29,7 +43,7 @@ type SetJobMutationParams = {
 export async function setJobMutation(
   db: FirebaseFirestore.Firestore,
   id: string,
-  data: SetJobMutationParams
+  data: SetJobMutationParams,
 ) {
   const jobRef = db.collection("jobs").doc(id);
   const payload: Record<string, any> = {};
@@ -41,6 +55,11 @@ export async function setJobMutation(
   if (data.steps) {
     for (const [key, value] of Object.entries(data.steps)) {
       if (value !== undefined) payload[`steps.${key}`] = value;
+    }
+  }
+  if (data.progress) {
+    for (const [key, value] of Object.entries(data.progress)) {
+      if (value !== undefined) payload[`progress.${key}`] = value;
     }
   }
 

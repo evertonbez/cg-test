@@ -83,18 +83,6 @@ const ImageUploadForm = () => {
     setFeedback({ type: null, message: "" });
 
     try {
-      // const validationResult = await validateImageFromUrl(url);
-
-      // if (!validationResult.isValid) {
-      //   setFeedback({
-      //     type: "error",
-      //     message: validationResult.error || "Erro ao validar imagem",
-      //   });
-      //   setLoading(false);
-      //   return;
-      // }
-
-      // Se passou na validação, fazer a requisição POST
       await handleImageSubmit(url);
       setFeedback({
         type: "success",
@@ -141,7 +129,7 @@ const ImageUploadForm = () => {
               disabled={loading}
             />
             <p className="text-xs text-muted-foreground">
-              Suporte para JPG, PNG and WEBP. Máximo 10MB.
+              Supported formats: JPG, PNG and WEBP. Maximum size: 10MB.
             </p>
           </div>
 

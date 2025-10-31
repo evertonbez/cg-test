@@ -14,6 +14,13 @@ export interface Steps {
   upload: "pending" | "started" | "done" | "error";
 }
 
+export interface Progress {
+  download?: number;
+  transform?: number;
+  upload?: number;
+  overall?: number;
+}
+
 export interface UpdatedAt {
   type: string;
   seconds: number;
@@ -29,7 +36,7 @@ export interface Job {
   updatedAt?: Timestamp;
   inputUrl: string;
   errorMessage?: string;
-  progress?: number;
+  progress?: Progress;
 }
 
 interface JobItemProps {
@@ -85,21 +92,53 @@ const JobItem = ({ job }: JobItemProps) => {
   const getStatusLabel = (status: Job["status"]) => {
     switch (status) {
       case "done":
-        return "Concluído";
+        return "Completed";
       case "error":
-        return "Erro";
+        return "Error";
       case "started":
-        return "Processando";
+        return "Processing";
       case "pending":
-        return "Pendente";
+        return "Pending";
       default:
-        return "Desconhecido";
+        return "Unknown";
     }
   };
 
-  const truncateUrl = (url: string, maxLength = 50) => {
-    return url.length > maxLength ? url.substring(0, maxLength) + "..." : url;
+  const getStepColor = (stepStatus: string) => {
+    switch (stepStatus) {
+      case "done":
+        return "text-emerald-400";
+      case "error":
+        return "text-red-400";
+      case "started":
+        return "text-blue-400";
+      case "pending":
+        return "text-neutral-500";
+      default:
+        return "text-neutral-400";
+    }
   };
+
+  const getStepLabel = (step: string) => {
+    const labels: Record<string, string> = {
+      download: "Download",
+      transform: "Transformation",
+      upload: "Upload",
+    };
+    return labels[step] || step;
+  };
+
+  const truncateUrl = (url: string, maxLength = 50) => {
+    return url.length > maxLength ? `${url.substring(0, maxLength)}...` : url;
+  };
+
+  const overallProgress = job.progress?.overall ?? 0;
+
+  const stepsOrder: Array<keyof typeof job.steps> = [
+    "download",
+    "transform",
+    "upload",
+  ];
 
   return (
     <div
@@ -131,11 +170,10 @@ const JobItem = ({ job }: JobItemProps) => {
           </div>
         </div>
 
-        {/* Progress and Toggle */}
         <div className="flex items-center gap-2 ml-2">
           <div className="w-12 text-right">
             <span className="text-xs font-medium text-neutral-300">
-              {/* {Math.round(job.progress)}% */}
+              {Math.round(overallProgress)}%
             </span>
           </div>
           {expanded ? (
@@ -146,7 +184,6 @@ const JobItem = ({ job }: JobItemProps) => {
         </div>
       </button>
 
-      {/* Progress Bar */}
       <div className="px-4 py-2">
         <div className="w-full bg-neutral-800 rounded-full h-1.5 overflow-hidden">
           <div
@@ -157,25 +194,59 @@ const JobItem = ({ job }: JobItemProps) => {
                   ? "bg-red-500"
                   : "bg-linear-to-r from-blue-500 to-cyan-500"
             }`}
-            style={{ width: `${Math.min(job.progress ?? 0, 100)}%` }}
+            style={{ width: `${Math.min(overallProgress, 100)}%` }}
           />
         </div>
       </div>
 
-      {/* Expanded Content */}
       {expanded && (
         <div className="border-t border-current/20 px-4 py-3 space-y-3">
-          {/* Timestamps */}
+          <div className="space-y-2">
+            <p className="text-xs text-neutral-500 font-medium mb-2">
+              Steps Status
+            </p>
+            {stepsOrder.map((step) => (
+              <div key={step} className="space-y-1">
+                <div className="flex items-center justify-between text-xs">
+                  <span
+                    className={`font-medium ${getStepColor(job.steps[step])}`}
+                  >
+                    {getStepLabel(step)}
+                  </span>
+                  <span className="text-neutral-400">
+                    {job.progress?.[step] ?? 0}%
+                  </span>
+                </div>
+                <div className="w-full bg-neutral-800 rounded-full h-1 overflow-hidden">
+                  <div
+                    className={`h-full transition-all duration-300 ${
+                      job.steps[step] === "done"
+                        ? "bg-emerald-500"
+                        : job.steps[step] === "error"
+                          ? "bg-red-500"
+                          : job.steps[step] === "started"
+                            ? "bg-blue-500"
+                            : "bg-neutral-600"
+                    }`}
+                    style={{
+                      width: `${Math.min(job.progress?.[step] ?? 0, 100)}%`,
+                    }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+
           <div className="grid grid-cols-2 gap-3 text-xs">
             <div>
-              <p className="text-neutral-500">Criado em</p>
+              <p className="text-neutral-500">Created at</p>
               <p className="text-neutral-300 font-medium">
                 {job.createdAt.toDate().toLocaleString("pt-BR")}
               </p>
             </div>
             {job.updatedAt && (
               <div>
-                <p className="text-neutral-500">Atualizado em</p>
+                <p className="text-neutral-500">Updated at</p>
                 <p className="text-neutral-300 font-medium">
                   {job.updatedAt.toDate().toLocaleString("pt-BR")}
                 </p>
@@ -183,11 +254,8 @@ const JobItem = ({ job }: JobItemProps) => {
             )}
           </div>
 
-          {/* Input URL */}
           <div>
-            <p className="text-xs text-neutral-500 mb-1">
-              URL da Imagem de Entrada
-            </p>
+            <p className="text-xs text-neutral-500 mb-1">Input Image URL</p>
             <a
               href={job.inputUrl}
               target="_blank"
@@ -198,22 +266,20 @@ const JobItem = ({ job }: JobItemProps) => {
             </a>
           </div>
 
-          {/* Error Message */}
           {job.errorMessage && (
             <div className="rounded-md border border-red-500/30 bg-red-500/10 p-2">
               <p className="text-xs text-red-200">
-                <strong>Erro:</strong> {job.errorMessage}
+                <strong>Error:</strong> {job.errorMessage}
               </p>
             </div>
           )}
 
-          {/* Output Image */}
           {job.outputUrl && job.status === "done" && (
             <div>
-              <p className="text-xs text-neutral-500 mb-2">Imagem Processada</p>
+              <p className="text-xs text-neutral-500 mb-2">Processed Image</p>
               <div className="flex">
                 <div className="rounded-md overflow-hidden border border-neutral-600 bg-neutral-800 p-4">
-                  {/* biome-ignore lint: Necessário exibir imagem processada */}
+                  {/* biome-ignore lint: Needed to display the processed image */}
                   <img
                     src={job.outputUrl}
                     alt="Processed output"
@@ -227,16 +293,15 @@ const JobItem = ({ job }: JobItemProps) => {
                 rel="noopener noreferrer"
                 className="text-xs text-blue-400 hover:text-blue-300 mt-2 inline-block"
               >
-                Ver em tamanho completo →
+                View full size →
               </a>
             </div>
           )}
 
-          {/* Status Info */}
           <div className="rounded-md border border-neutral-600 bg-neutral-800/50 p-2">
             <p className="text-xs text-neutral-400">
               <strong>Status:</strong> {getStatusLabel(job.status)} (
-              {job.progress ?? 100}% concluído)
+              {Math.round(overallProgress)}% completed)
             </p>
           </div>
         </div>
