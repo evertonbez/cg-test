@@ -1,4 +1,7 @@
-import { setJobMutation } from "@cograde/firebase/admin/mutations";
+import {
+  createJobMutation,
+  updateJobMutation,
+} from "@cograde/firebase/admin/mutations";
 import { db } from "@cograde/firebase/server";
 import axios from "axios";
 import { fileTypeFromBuffer } from "file-type";
@@ -20,7 +23,7 @@ export const imageProcessingJob = job(
   async (data) => {
     const { id, inputUrl } = data;
 
-    await setJobMutation(db, id, {
+    await createJobMutation(db, id, {
       inputUrl,
       status: "started",
       steps: { download: "pending", transform: "pending", upload: "pending" },
@@ -29,7 +32,7 @@ export const imageProcessingJob = job(
 
     try {
       // ===== ETAPA 1: DOWNLOAD =====
-      await setJobMutation(db, id, {
+      await updateJobMutation(db, id, {
         steps: { download: "started" },
         progress: { download: 10, overall: 10 },
       });
@@ -40,13 +43,13 @@ export const imageProcessingJob = job(
       });
       const imageBuffer: Buffer = Buffer.from(response.data);
 
-      await setJobMutation(db, id, {
+      await updateJobMutation(db, id, {
         progress: { download: 30, overall: 30 },
       });
 
       const type = await fileTypeFromBuffer(imageBuffer);
       if (!type || !type.mime.startsWith("image/")) {
-        await setJobMutation(db, id, {
+        await updateJobMutation(db, id, {
           status: "error",
           steps: { download: "error" },
           progress: { download: 0, overall: 0 },
@@ -57,7 +60,7 @@ export const imageProcessingJob = job(
 
       const MAX_SIZE_BYTES = 10 * 1024 * 1024;
       if (imageBuffer.length > MAX_SIZE_BYTES) {
-        await setJobMutation(db, id, {
+        await updateJobMutation(db, id, {
           status: "error",
           steps: { download: "error" },
           progress: { download: 0, overall: 0 },
@@ -66,7 +69,7 @@ export const imageProcessingJob = job(
         throw new Error("Arquivo maior que 10 MB");
       }
 
-      await setJobMutation(db, id, {
+      await updateJobMutation(db, id, {
         steps: { download: "done", transform: "started" },
         progress: { download: 100, transform: 10, overall: 35 },
       });
@@ -76,13 +79,13 @@ export const imageProcessingJob = job(
         fit: "inside",
       });
 
-      await setJobMutation(db, id, {
+      await updateJobMutation(db, id, {
         progress: { transform: 25, overall: 45 },
       });
 
       transformer = transformer.grayscale();
 
-      await setJobMutation(db, id, {
+      await updateJobMutation(db, id, {
         progress: { transform: 50, overall: 55 },
       });
 
@@ -98,13 +101,13 @@ export const imageProcessingJob = job(
         .jpeg({ quality: 80 })
         .toBuffer();
 
-      await setJobMutation(db, id, {
+      await updateJobMutation(db, id, {
         steps: { transform: "done", upload: "started" },
         progress: { transform: 100, upload: 10, overall: 65 },
       });
 
       // ===== ETAPA 3: UPLOAD =====
-      await setJobMutation(db, id, {
+      await updateJobMutation(db, id, {
         progress: { upload: 30, overall: 75 },
       });
 
@@ -114,11 +117,11 @@ export const imageProcessingJob = job(
         contentType: type.mime || "image/jpeg",
       });
 
-      await setJobMutation(db, id, {
+      await updateJobMutation(db, id, {
         progress: { upload: 80, overall: 85 },
       });
 
-      await setJobMutation(db, id, {
+      await updateJobMutation(db, id, {
         outputUrl: r2Result.publicUrl,
         status: "done",
         steps: { upload: "done" },
@@ -131,7 +134,7 @@ export const imageProcessingJob = job(
         message: "Image processed successfully",
       };
     } catch (error) {
-      await setJobMutation(db, id, {
+      await updateJobMutation(db, id, {
         status: "error",
         steps: { download: "error", transform: "error", upload: "error" },
         progress: { download: 0, transform: 0, upload: 0, overall: 0 },
