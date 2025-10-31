@@ -6,7 +6,7 @@ import sharp from "sharp";
 import z from "zod";
 import { job } from "../../core/job.ts";
 import { imageProcessingQueue } from "../../queues/queues.ts";
-import { getSignedUrl, uploadObject } from "../../sdks/r2.ts";
+import { uploadObject } from "../../sdks/r2.ts";
 
 export const imageProcessingJob = job(
   "image-processing",
@@ -84,20 +84,15 @@ export const imageProcessingJob = job(
         contentType: type.mime || "image/jpeg",
       });
 
-      const uploadUrl = await getSignedUrl({
-        key: r2Result.key,
-        operation: "get",
-      });
-
       await setJobMutation(db, id, {
-        outputUrl: uploadUrl,
+        outputUrl: r2Result.publicUrl,
         status: "done",
         steps: { upload: "done" },
       });
 
       return {
         status: "done",
-        outputUrl: uploadUrl,
+        outputUrl: r2Result.publicUrl,
         message: "Image processed successfully",
       };
     } catch (error) {
@@ -108,5 +103,5 @@ export const imageProcessingJob = job(
       });
       throw error;
     }
-  }
+  },
 );

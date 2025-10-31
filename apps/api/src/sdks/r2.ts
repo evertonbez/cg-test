@@ -72,10 +72,11 @@ export type UploadParams = {
 export type UploadResult = {
   etag?: string;
   key: string;
+  publicUrl: string;
 };
 
 export async function uploadObject(
-  params: UploadParams
+  params: UploadParams,
 ): Promise<UploadResult> {
   const client = getR2Client();
   const bucket = ensureBucket();
@@ -98,7 +99,11 @@ export async function uploadObject(
 
   const res = await client.send(new PutObjectCommand(input));
 
-  return { etag: res.ETag, key: params.key };
+  return {
+    etag: res.ETag,
+    key: params.key,
+    publicUrl: `${cachedPublicBaseUrl}/images/${params.key}`,
+  };
 }
 
 export type SignedUrlOperation = "get" | "put";
@@ -110,7 +115,7 @@ export type GetSignedUrlParams = {
 };
 
 export async function getSignedUrl(
-  params: GetSignedUrlParams
+  params: GetSignedUrlParams,
 ): Promise<string> {
   const client = getR2Client();
   const bucket = ensureBucket();

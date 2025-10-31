@@ -1,12 +1,11 @@
-import { useState } from "react";
+import { ThemeProvider } from "./components/theme-provider";
+import Dashboard from "./pages/dashborad";
 
 function App() {
-  const [count, setCount] = useState(0);
-
   return (
-    <>
-      <h1>Cograde</h1>
-    </>
+    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+      <Dashboard />
+    </ThemeProvider>
   );
 }
 
