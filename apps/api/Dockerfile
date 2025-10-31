@@ -27,4 +27,4 @@ ENV HOSTNAME="0.0.0.0"
 
 EXPOSE 3333
 
-ENTRYPOINT ["pnpm", "start"]
+ENTRYPOINT ["pnpm", "start:api"]
