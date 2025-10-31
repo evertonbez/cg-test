@@ -114,3 +114,40 @@ docker-compose down
 docker-compose build --no-cache
 docker-compose up
 ```
+
+## CI/CD e Secrets
+
+### Configurando Firebase Service Account no GitHub
+
+Para que o workflow `production-api.yml` funcione corretamente, você precisa:
+
+1. **Preparar o arquivo JSON** do Firebase:
+   - Copie o conteúdo completo do arquivo `serviceAccountKey.json`
+
+2. **Adicionar o Secret no GitHub**:
+   - Vá para: Settings → Secrets and variables → Actions → New repository secret
+   - Nome: `FIREBASE_SERVICE_ACCOUNT`
+   - Valor: Cole o conteúdo do arquivo JSON (todo o conteúdo em uma linha ou multilinea, GitHub aceita ambos)
+
+3. **Verificar no workflow**:
+   - O step "Write Firebase service account" criará o arquivo necessário antes da build
+   - O arquivo será criado em: `packages/firebase/src/credentials/serviceAccountKey.json`
+   - Este arquivo está no `.gitignore` por segurança
+
+### Como o workflow funciona
+
+1. Checkout do código
+2. Cria o arquivo de credenciais do Firebase a partir do secret
+3. Setup do Docker Buildx
+4. Login no GitHub Container Registry (GHCR)
+5. Build e push da imagem Docker com tags:
+   - `latest` - versão mais recente
+   - `<commit-sha>` - identificador do commit
+
+### Debug
+
+Se o workflow falhar:
+
+- Verifique se o secret `FIREBASE_SERVICE_ACCOUNT` está configurado
+- Valide o conteúdo do JSON (sem quebras de linha extras)
+- Verifique os logs do workflow em Actions → production-api
