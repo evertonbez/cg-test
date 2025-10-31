@@ -16,6 +16,7 @@ permissions:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}-api
+  FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
 
 jobs:
   deploy:
@@ -29,6 +30,7 @@ jobs:
         run: |
           mkdir -p packages/firebase/src/credentials
           echo "$FIREBASE_SERVICE_ACCOUNT" > packages/firebase/src/credentials/serviceAccountKey.json
+          ls -la packages/firebase/src/credentials
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
 
