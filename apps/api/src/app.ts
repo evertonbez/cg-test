@@ -70,7 +70,7 @@ export function initializeBullBoard() {
 
 app.get("/health", async (c) => {
   try {
-    return c.json({ status: "ok" }, 200);
+    return c.json({ status: "ok", timestamp: new Date().toISOString() }, 200);
   } catch (error) {
     return c.json(
       {
