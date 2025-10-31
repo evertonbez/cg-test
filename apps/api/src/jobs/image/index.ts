@@ -31,7 +31,6 @@ export const imageProcessingJob = job(
     });
 
     try {
-      // ===== ETAPA 1: DOWNLOAD =====
       await updateJobMutation(db, id, {
         steps: { download: "started" },
         progress: { download: 10, overall: 10 },
@@ -74,7 +73,6 @@ export const imageProcessingJob = job(
         progress: { download: 100, transform: 10, overall: 35 },
       });
 
-      // ===== ETAPA 2: TRANSFORMAÇÃO =====
       let transformer = sharp(imageBuffer).resize(1024, 1024, {
         fit: "inside",
       });
@@ -106,7 +104,6 @@ export const imageProcessingJob = job(
         progress: { transform: 100, upload: 10, overall: 65 },
       });
 
-      // ===== ETAPA 3: UPLOAD =====
       await updateJobMutation(db, id, {
         progress: { upload: 30, overall: 75 },
       });
