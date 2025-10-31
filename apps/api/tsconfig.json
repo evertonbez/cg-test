@@ -2,7 +2,6 @@
   "extends": "@cograde/tsconfig/node.json",
   "compilerOptions": {
     "noEmit": true,
-    "allowJs": true,
     "allowImportingTsExtensions": true
   }
 }
