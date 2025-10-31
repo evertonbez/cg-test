@@ -1,6 +1,7 @@
 import { getJobByIdQuery, getJobsQuery } from "@cograde/firebase/admin/queries";
 import { db } from "@cograde/firebase/server";
 import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
+import { nanoid } from "nanoid";
 import { imageProcessingJob } from "../../jobs/index.ts";
 import { CreateJobSchema } from "./schema.ts";
 
@@ -71,7 +72,9 @@ const app = new OpenAPIHono()
     }),
     async (c) => {
       try {
-        const { id, url } = c.req.valid("json");
+        const { url } = c.req.valid("json");
+
+        const id = `image_${nanoid(6)}`;
         const job = await getJobByIdQuery(db, id);
 
         if (job) {
@@ -81,7 +84,7 @@ const app = new OpenAPIHono()
               jobId: job.id,
               message: "Job already exists",
             },
-            200
+            200,
           );
         }
 
@@ -93,7 +96,7 @@ const app = new OpenAPIHono()
             jobId: id,
             message: "Job created successfully",
           },
-          201
+          201,
         );
       } catch (error) {
         console.error("Error creating job:", error);
@@ -102,10 +105,10 @@ const app = new OpenAPIHono()
             error: "Internal server error",
             code: "INTERNAL_ERROR",
           },
-          500
+          500,
         );
       }
-    }
+    },
   )
   .openapi(
     createRoute({
@@ -127,7 +130,7 @@ const app = new OpenAPIHono()
       });
 
       return c.json({ data: jobs });
-    }
+    },
   )
   .openapi(
     createRoute({
@@ -147,7 +150,7 @@ const app = new OpenAPIHono()
       const job = await getJobByIdQuery(db, id);
 
       return c.json({ data: job });
-    }
+    },
   );
 
 export const jobsRoute = app;

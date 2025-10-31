@@ -9,10 +9,9 @@ const Dashboard = () => {
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="grid gap-8 lg:grid-cols-3">
           <div className="lg:col-span-1">
-            <ImageUploadForm onSubmit={async (url: string) => {}} />
+            <ImageUploadForm />
           </div>
 
-          {/* Jobs List Section */}
           <div className="lg:col-span-2">
             <JobsList />
           </div>

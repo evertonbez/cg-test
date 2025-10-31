@@ -5,9 +5,7 @@ import type { Job } from "./job-item";
 import JobItem from "./job-item";
 
 const JobsList = () => {
-  const { data, loading, error } = useFirestoreRealtime<Job>("jobs");
-
-  console.log(data, loading, error);
+  const { data, loading } = useFirestoreRealtime<Job>("jobs");
 
   const sortedJobs = useMemo(() => {
     if (!data) return [];

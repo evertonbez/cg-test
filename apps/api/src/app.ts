@@ -5,6 +5,7 @@ import { serveStatic } from "@hono/node-server/serve-static";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { Scalar } from "@scalar/hono-api-reference";
 import { basicAuth } from "hono/basic-auth";
+import { cors } from "hono/cors";
 import { requestId } from "hono/request-id";
 import { secureHeaders } from "hono/secure-headers";
 import { getAllQueues } from "./queues/index.ts";
@@ -23,6 +24,7 @@ const app = new OpenAPIHono({
 
 app.use("*", requestId());
 app.use(secureHeaders());
+app.use(cors());
 
 const basePath = "/admin";
 
@@ -31,7 +33,7 @@ app.use(
   basicAuth({
     username: "admin",
     password: "password",
-  })
+  }),
 );
 
 app.use(
@@ -39,7 +41,7 @@ app.use(
   basicAuth({
     username: "admin",
     password: "password",
-  })
+  }),
 );
 
 export function initializeBullBoard() {
@@ -62,7 +64,7 @@ export function initializeBullBoard() {
 
   console.log(
     `BullBoard initialized with ${queues.length} queues:`,
-    queues.map((q) => q.name)
+    queues.map((q) => q.name),
   );
 }
 
@@ -75,7 +77,7 @@ app.get("/health", async (c) => {
         status: "error",
         error: error instanceof Error ? error.message : "Health check failed",
       },
-      500
+      500,
     );
   }
 });
@@ -93,7 +95,7 @@ app.doc("/openapi", {
 
 app.get(
   "/",
-  Scalar({ url: "/openapi", pageTitle: "Cograde API", theme: "saturn" })
+  Scalar({ url: "/openapi", pageTitle: "Cograde API", theme: "saturn" }),
 );
 
 export default app;
