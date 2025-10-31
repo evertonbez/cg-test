@@ -6,6 +6,7 @@ on:
     paths:
       - "apps/api/**"
       - "packages/**"
+      - ".github/workflows/production-api.yml"
 
 permissions:
   contents: read
