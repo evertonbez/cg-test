@@ -17,7 +17,7 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}-web
   FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-
+  VITE_API_URL: "https://api.everton.place"
 jobs:
   deploy:
     runs-on: tenki-standard-autoscale
@@ -41,6 +41,8 @@ jobs:
         with:
           context: .
           file: ./apps/frontend/Dockerfile
+          args: |
+            VITE_API_URL=${{ env.VITE_API_URL }}
           push: true
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
