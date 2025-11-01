@@ -1,6 +1,7 @@
 import { AlertCircle } from "lucide-react";
 import type { FormEvent } from "react";
 import { useState } from "react";
+import { api } from "../lib/axios";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 import { Button } from "./ui/button";
 import {
@@ -32,27 +33,13 @@ const ImageUploadForm = () => {
     }
   };
 
-  const handleImageSubmit = async (url: string) => {
+  const handleImageSubmit = async (imageUrl: string) => {
     try {
-      const response = await fetch("http://localhost:3001/api/jobs", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          url: url,
-        }),
+      const response = await api.post("/api/jobs", {
+        url: imageUrl,
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(
-          errorData.error || `Erro ao criar job: ${response.statusText}`,
-        );
-      }
-
-      const data = await response.json();
-      console.log("Job criado com sucesso:", data);
+      return response.data;
     } catch (error) {
       throw error instanceof Error
         ? error

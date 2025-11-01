@@ -17,6 +17,9 @@ COPY --from=builder /app/out/json/ .
 RUN pnpm install --frozen-lockfile
 COPY --from=builder /app/out/full/ .
 
+ARG VITE_API_URL
+ENV VITE_API_URL=$VITE_API_URL
+
 RUN pnpm add -g turbo
 RUN pnpm turbo run build --filter=@cograde/frontend
 
