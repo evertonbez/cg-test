@@ -14,9 +14,10 @@ RUN turbo prune @cograde/frontend --docker
 FROM base AS installer
 WORKDIR /app
 COPY --from=builder /app/out/json/ .
-RUN pnpm install --frozen-lockfile --prod
+RUN pnpm install --frozen-lockfile
 COPY --from=builder /app/out/full/ .
 
+RUN pnpm add -g turbo
 RUN pnpm turbo run build --filter=@cograde/frontend
 
 FROM nginx:alpine AS runner
