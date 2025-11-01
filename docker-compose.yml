@@ -1,4 +1,5 @@
 services:
+  # Redis - Cache and message broker for Bull queue
   redis:
     image: redis:7-alpine
     container_name: cograde-redis
@@ -11,6 +12,59 @@ services:
       interval: 10s
       timeout: 3s
       retries: 3
+    networks:
+      - cograde-network
+
+  # API - Backend service
+  api:
+    build:
+      context: .
+      dockerfile: ./apps/api/Dockerfile
+    container_name: cograde-api
+    ports:
+      - "3333:3333"
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - PORT=3333
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-}
+      - FIREBASE_SERVICE_ACCOUNT=${FIREBASE_SERVICE_ACCOUNT}
+      - AWS_REGION=${AWS_REGION:-auto}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - R2_BUCKET_NAME=${R2_BUCKET_NAME}
+      - R2_ACCOUNT_ID=${R2_ACCOUNT_ID}
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - cograde-network
+    volumes:
+      - ./apps/api/src:/app/apps/api/src
+    restart: unless-stopped
+
+  # Frontend - React application
+  frontend:
+    build:
+      context: .
+      dockerfile: ./apps/frontend/Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:3333}
+    container_name: cograde-frontend
+    ports:
+      - "80:80"
+    environment:
+      - VITE_API_URL=${VITE_API_URL:-http://localhost:3333}
+    depends_on:
+      - api
+    networks:
+      - cograde-network
+    restart: unless-stopped
 
 volumes:
   redis_data:
+
+networks:
+  cograde-network:
+    driver: bridge
