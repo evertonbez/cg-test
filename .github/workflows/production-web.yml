@@ -41,7 +41,7 @@ jobs:
         with:
           context: .
           file: ./apps/frontend/Dockerfile
-          args: |
+          build-args: |
             VITE_API_URL=${{ env.VITE_API_URL }}
           push: true
           tags: |
